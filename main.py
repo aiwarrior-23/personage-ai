@@ -202,59 +202,34 @@ def update_password():
     finally:
         cursor.close()
 
-@app.route('/add_user', methods=['POST'])
-def add_user():
-    """
-    Endpoint to add a new user.
 
-    Returns:
-    JSON: Addition status and user ID.
-    """
-    data = request.json
-    user_id = str(uuid.uuid4())  # Generate a unique user ID
-
-    name = data.get('name')
-    department = data.get('department')
-    reporting_manager = data.get('department')
-    # ... other fields
-
-    conn = mysql.connection
-    cursor = conn.cursor()
-
-    query = '''INSERT INTO users (user_id, name, department, reporting_manager, ...)
-               VALUES (%s, %s, %s, %s, ...)'''
-    values = (user_id, name, department, reporting_manager, ...)
-
-    try:
-        cursor.execute(query, values)
-        conn.commit()
-        return jsonify({'message': 'User added successfully', 'user_id': user_id}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    finally:
-        cursor.close()
-
-@app.route('/get_users', methods=['GET'])
+@app.route('/get_users', methods=['POST'])
 def get_users():
     """
-    Endpoint to retrieve users by manager ID.
+    Endpoint to retrieve users. If the username is 'admin', all users are retrieved.
+    Otherwise, retrieves users by manager ID.
 
     Returns:
     JSON: List of users.
     """
-    manager_id = request.args.get('manager_id')
+    data = request.json
+    username = data.get('username')
+    manager_id = data.get('manager_id')
 
     conn = mysql.connection
     cursor = conn.cursor()
 
-    query = '''SELECT * FROM users WHERE managerid = %s'''
-    values = (manager_id,)
+    if username == 'admin':
+        query = 'SELECT * FROM company_table'
+        cursor.execute(query)
+    else:
+        query = 'SELECT * FROM company_table WHERE reporting_manager = %s'
+        cursor.execute(query, (manager_id,))
 
     try:
-        cursor.execute(query, values)
         rows = cursor.fetchall()
-
-        users = [{'user_id': row[0], 'name': row[1], 'department': row[2], 'reporting_manager': row[3]} for row in rows]
+        column_names = [column[0] for column in cursor.description]
+        users = [{column_names[index]: value for index, value in enumerate(row)} for row in rows]
 
         return jsonify({'message': 'Success', 'users': users}), 200
     except Exception as e:
