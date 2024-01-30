@@ -32,7 +32,7 @@ def create_user():
     cur = mysql.connection.cursor()
 
     cur.execute("INSERT INTO company_table(username, first_name, last_name, email, company, user_type, location, department, reporting_manager) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-                (data.get('username'), data.get('First Name'), data.get('Last NAme'), data.get('email'), data.get('company'), data.get('userType'), data.get('location'), data.get('department'), data.get('reporting manager')))
+                (data.get('username'), data.get('first_name'), data.get('last_name'), data.get('email'), data.get('company'), data.get('user_type'), data.get('location'), data.get('department'), data.get('reporting_manager')))
 
     mysql.connection.commit()
     cur.close()
