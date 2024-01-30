@@ -31,3 +31,5 @@ export const FlagIconDataApi = `${api}/flagIconData.json`;
 export const FontawsomeDataApi = `${api}/fontawsomeData.json`;
 export const IcoDataApi = `${api}/icoData.json`;
 export const ThemifyDataApi = `${api}/themifyData.json`;
+
+export const Api_Url = "http://98.70.90.20:5000/";

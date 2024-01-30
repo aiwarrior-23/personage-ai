@@ -57,7 +57,7 @@ const Leftbar = () => {
             <Image
               attrImage={{
                 className: "img-fluid for-light",
-                src: `${require("../../../assets/images/logo/logo.png")}`,
+                src: `${require("../../../assets/images/logo/personage_log.png")}`,
                 alt: "",
               }}
             />
@@ -86,7 +86,7 @@ const Leftbar = () => {
         </div>
       </Col>
       <Col xxl="5" xl="6" lg="5" md="4" sm="3" className="left-header p-0">
-        <NotificationSlider />
+        {/* <NotificationSlider /> */}
       </Col>
     </Fragment>
   );

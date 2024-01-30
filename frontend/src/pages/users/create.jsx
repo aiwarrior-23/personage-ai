@@ -13,6 +13,7 @@ import {
   Label,
   Row,
 } from "reactstrap";
+import { OnboardingUsers } from "../../api_handler/onbordUsers";
 
 const CreateUsers = () => {
   const [formdata, setFormdata] = useState({});
@@ -27,12 +28,10 @@ const CreateUsers = () => {
   }, [formdata]);
 
   const onSubmit = (data) => {
-    if (data) {
-      setFormdata(data);
-      console.log(formdata);
-    } else {
-      console.log("error");
-    }
+    setFormdata(data);
+    OnboardingUsers(data).then((res) => {
+      console.log(res);
+    });
   };
   return (
     <Fragment>
