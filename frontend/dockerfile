@@ -8,12 +8,12 @@ WORKDIR /personage/src/app
 COPY package*.json ./ yarn.lock ./
 
 # Install project dependencies
-RUN npm install --force
+RUN yarn install
 
 # Copy the entire project to the working directory
 COPY . .
 
-EXPOSE 3001
+EXPOSE 3000
 
 # Specify the command to run on container startup
-CMD ["npm", "run", "start"]
+CMD ["yarn", "run", "start"]
