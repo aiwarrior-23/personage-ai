@@ -13,7 +13,7 @@ RUN yarn install
 # Copy the entire project to the working directory
 COPY . .
 
-EXPOSE 3000
+EXPOSE 3001
 
 # Specify the command to run on container startup
 CMD ["yarn", "run", "start"]
