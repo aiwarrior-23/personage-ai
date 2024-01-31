@@ -93,9 +93,9 @@
     "world-map-geojson": "^1.0.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts --max_old_space_size=8096 build",
-    "test": "react-scripts test",
+    "start": "node scripts/start.js",
+    "build": "node scripts/build.js",
+    "test": "node scripts/test.js",
     "eject": "react-scripts eject",
     "lint": "eslint --fix --ext .js,.jsx .",
     "json-serve": "node public/server.js",
