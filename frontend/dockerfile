@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3001
 
 # Specify the command to run on container startup
-CMD ["yarn", "run", "start"]
+# CMD ["yarn", "run", "start"]
