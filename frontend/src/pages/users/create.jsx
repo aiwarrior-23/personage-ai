@@ -31,10 +31,10 @@ const CreateUsers = () => {
   const onSubmit = (data) => {
     setFormdata(data);
     OnboardingUsers(data).then((res) => {
-      if (res.status === 201) {
+      if (res.status === "success") {
         toast.success(res.message);
       } else {
-        toast.error("Something went wrong");
+        toast.error(res.message);
       }
     });
   };

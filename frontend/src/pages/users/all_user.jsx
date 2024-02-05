@@ -1,38 +1,56 @@
-import React, { Fragment, useCallback, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { Breadcrumbs, Btn, H4 } from "../../AbstractElements";
 import { Card, CardBody, Container } from "reactstrap";
 import DataTable from "react-data-table-component";
-import { dummytabledata, tableColumns } from "../../Data/Table/Defaultdata";
+import { All_user_tableColumns } from "../../Data/Table/Defaultdata";
+import { GetAllUsers } from "../../api_handler/onbordUsers";
 
 const GetUsers = () => {
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [toggleDelet, setToggleDelet] = useState(false);
-  const [data, setData] = useState(dummytabledata);
+  const [data, setData] = useState([]);
 
-  const handleRowSelected = useCallback((state) => {
-    setSelectedRows(state.selectedRows);
+  // const handleRowSelected = useCallback((state) => {
+  //   setSelectedRows(state.selectedRows);
+  // }, []);
+
+  useEffect(() => {
+    GetAllUsers().then((res) => {
+      setData(res.data);
+    });
+    All_user_tableColumns.push({
+      name: "Action",
+      cell: (row) => (
+        <div className="d-flex">
+          <Btn
+            attrBtn={{
+              className: "btn-icon",
+              color: "primary",
+              size: "sm",
+              onClick: () => {
+                console.log(row);
+              },
+            }}
+          >
+            <i className="fa fa-pencil"></i>
+            Edit
+          </Btn>
+          <Btn
+            attrBtn={{
+              className: "btn-icon",
+              color: "danger",
+              size: "sm",
+              onClick: () => {
+                console.log(row);
+              },
+            }}
+          >
+            <i className="fa fa-trash"></i>
+            Delete
+          </Btn>
+        </div>
+      ),
+    });
   }, []);
 
-  const handleDelete = () => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete:\r ${selectedRows.map(
-          (r) => r.title
-        )}?`
-      )
-    ) {
-      setToggleDelet(!toggleDelet);
-
-      setData(
-        data.filter((item) =>
-          selectedRows.filter((elem) => elem.id === item.id).length > 0
-            ? false
-            : true
-        )
-      );
-      setSelectedRows("");
-    }
-  };
   return (
     <Fragment>
       <Breadcrumbs
@@ -44,29 +62,12 @@ const GetUsers = () => {
       <Container fluid={true}>
         <Card>
           <CardBody>
-            {selectedRows.length !== 0 && (
-              <div
-                className={`d-flex align-items-center justify-content-between bg-light-info p-2`}
-              >
-                <H4 attrH4={{ className: "text-muted m-0" }}>
-                  Delet Selected Data..!
-                </H4>
-                <Btn
-                  attrBtn={{ color: "danger", onClick: () => handleDelete() }}
-                >
-                  Delete
-                </Btn>
-              </div>
-            )}
             <DataTable
               data={data}
-              columns={tableColumns}
+              columns={All_user_tableColumns}
               striped={true}
               center={true}
               pagination
-              selectableRows
-              onSelectedRowsChange={handleRowSelected}
-              clearSelectedRows={toggleDelet}
             />
           </CardBody>
         </Card>
