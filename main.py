@@ -249,5 +249,6 @@ def get_users():
 def get_all_users_route():
     return get_all_users(mysql.connect.cursor(), jsonify)
 
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5001)
