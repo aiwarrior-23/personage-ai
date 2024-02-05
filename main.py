@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_mysqldb import MySQL
 from flask_mail import Mail, Message
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 import uuid
 import requests
+from functions.password_generator import password_generator # Import the password_generator function
+from controllers.users import get_all_users # Import the get_all_users function
 
 app = Flask(__name__)
 CORS(app)
@@ -30,13 +32,19 @@ mail = Mail(app)
 def create_user():
     data = request.json
     cur = mysql.connection.cursor()
-
-    cur.execute("INSERT INTO company_table(username, first_name, last_name, email, company, user_type, location, department, reporting_manager) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-                (data.get('username'), data.get('first_name'), data.get('last_name'), data.get('email'), data.get('company'), data.get('user_type'), data.get('location'), data.get('department'), data.get('reporting_manager')))
-
-    mysql.connection.commit()
-    cur.close()
-    return jsonify({"message": f"User {data.get('username')} created successfully"}), 201
+    try:
+        # Generate a random password
+        password = password_generator()
+        cur.execute("INSERT INTO company_table(username, first_name, last_name, email, company, user_type, location, department, reporting_manager) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                    (data.get('username'), data.get('first_name'), data.get('last_name'), data.get('email'), data.get('company'), data.get('user_type'), data.get('location'), data.get('department'), data.get('reporting_manager')))
+        cur.execute("INSERT INTO company_passwords(username, password) VALUES (%s, %s)", (data.get('username'), password))
+        mysql.connection.commit()
+        return jsonify({"message": f"User {data.get('username')} created successfully","status":"success"}), 201
+    except Exception as e:
+        mysql.connection.rollback()
+        return jsonify({"message": str(e), "status":"failure"}), 400
+    finally:
+        cur.close()
 
 @app.route('/check_and_update_users', methods=['GET'])
 def check_and_update_users():
@@ -237,5 +245,9 @@ def get_users():
     finally:
         cursor.close()
 
+@app.route('/get_all_users', methods=['GET'])
+def get_all_users_route():
+    return get_all_users(mysql.connect.cursor(), jsonify)
+
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5001)
