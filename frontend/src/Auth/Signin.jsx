@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import man from "../assets/images/dashboard/profile.png";
 
 import CustomizerContext from "../_helper/Customizer";
-import OtherWay from "./OtherWay";
 import { ToastContainer, toast } from "react-toastify";
 
 const Signin = ({ selected }) => {

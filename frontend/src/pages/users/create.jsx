@@ -14,6 +14,7 @@ import {
   Row,
 } from "reactstrap";
 import { OnboardingUsers } from "../../api_handler/onbordUsers";
+import { toast } from "react-toastify";
 
 const CreateUsers = () => {
   const [formdata, setFormdata] = useState({});
@@ -30,7 +31,11 @@ const CreateUsers = () => {
   const onSubmit = (data) => {
     setFormdata(data);
     OnboardingUsers(data).then((res) => {
-      console.log(res);
+      if (res.status === 201) {
+        toast.success(res.message);
+      } else {
+        toast.error("Something went wrong");
+      }
     });
   };
   return (
@@ -73,16 +78,16 @@ const CreateUsers = () => {
                     <Label className="col-form-label">FirstName</Label>
                     <input
                       className={`form-control ${
-                        errors.firstname && "is-invalid"
+                        errors.first_name && "is-invalid"
                       }`}
                       type="text"
                       placeholder="First Name"
-                      name="firstname"
-                      defaultValue={formdata.firstname || ""}
-                      {...register("firstname", { required: true })}
+                      name="first_name"
+                      defaultValue={formdata.first_name || ""}
+                      {...register("first_name", { required: true })}
                     />
                     <span className="text-danger">
-                      {errors.firstname && "First name is required"}
+                      {errors.first_name && "First name is required"}
                     </span>
                   </FormGroup>
                 </Col>
@@ -91,16 +96,16 @@ const CreateUsers = () => {
                     <Label className="col-form-label">LastName</Label>
                     <input
                       className={`form-control ${
-                        errors.lastname && "is-invalid"
+                        errors.last_name && "is-invalid"
                       }`}
                       type="text"
                       placeholder="Last Name"
-                      name="lastname"
-                      defaultValue={formdata.lastname || ""}
-                      {...register("lastname", { required: true })}
+                      name="last_name"
+                      defaultValue={formdata.last_name || ""}
+                      {...register("last_name", { required: true })}
                     />
                     <span className="text-danger">
-                      {errors.lastname && "Last name is required"}
+                      {errors.last_name && "Last name is required"}
                     </span>
                   </FormGroup>
                 </Col>
@@ -143,11 +148,11 @@ const CreateUsers = () => {
                     <Label className="col-form-label">User Type</Label>
                     <select
                       className={`form-control ${
-                        errors.userType && "is-invalid"
+                        errors.user_type && "is-invalid"
                       }`}
-                      name="userType"
-                      defaultValue={formdata.userType || ""}
-                      {...register("userType", { required: true })}
+                      name="user_type"
+                      defaultValue={formdata.user_type || ""}
+                      {...register("user_type", { required: true })}
                     >
                       <option value="">select</option>
                       <option value="Admin">Admin</option>
@@ -158,7 +163,7 @@ const CreateUsers = () => {
                       <option value={"Employee-HR"}>Employee-Hr</option>
                     </select>
                     <span className="text-danger">
-                      {errors.userType && "UserType is required"}
+                      {errors.user_type && "UserType is required"}
                     </span>
                   </FormGroup>
                 </Col>
