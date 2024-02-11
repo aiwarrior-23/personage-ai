@@ -7,6 +7,8 @@ import uuid
 import requests
 from functions.password_generator import password_generator # Import the password_generator function
 from controllers.users import get_all_users # Import the get_all_users function
+from functions.check_credential import check_user_credentials, validate_password # Import the check_user_credentials function
+from logger import get_logger
 
 app = Flask(__name__)
 CORS(app)
@@ -27,7 +29,7 @@ app.config['MAIL_USE_SSL'] = True
 
 mysql = MySQL(app)
 mail = Mail(app)
-
+logger= get_logger("my_logger")
 @app.route('/create_user', methods=['POST'])
 def create_user():
     data = request.json
@@ -42,6 +44,7 @@ def create_user():
         return jsonify({"message": f"User {data.get('username')} created successfully","status":"success"}), 201
     except Exception as e:
         mysql.connection.rollback()
+        logger.error(str(e))
         return jsonify({"message": str(e), "status":"failure"}), 400
     finally:
         cur.close()
@@ -62,7 +65,7 @@ def check_and_update_users():
 
         # If user not in company_passwords table, add them
         if not result:
-            response, status_code = validate_password(username, '')
+            response, status_code = validate_password(cur,username, '')
             if status_code == 200:
                 print(f"User {username} added to company_passwords table.")
             else:
@@ -71,42 +74,13 @@ def check_and_update_users():
     cur.close()
     return jsonify({"message": "Checked and updated users successfully"})
 
-def validate_password(username, password):
-    cur = mysql.connection.cursor()
-
-    # Insert username and password into company_passwords table
-    try:
-        cur.execute("INSERT INTO company_passwords(username, password) VALUES (%s, %s)", (username, password))
-        mysql.connection.commit()
-        response = {"message": f"User {username} added to company_passwords table."}
-        status_code = 200
-    except Exception as e:
-        mysql.connection.rollback()
-        response = {"message": str(e)}
-        status_code = 400
-    finally:
-        cur.close()
-
-    return response, status_code
-
-def check_user_credentials(username, password):
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT password, username FROM company_passwords WHERE username = %s", (username,))
-    user_record = cur.fetchone()
-    cur.close()
-
-    if user_record and user_record[0] == password:
-        return user_record[1], True
-    else:
-        return None, False
-
 @app.route('/validate_credentials', methods=['POST'])
 def validate_credentials():
     data = request.json
     username = data.get('username')
     password = data.get('password')
 
-    user_type, is_valid = check_user_credentials(username, password)
+    user_type, is_valid = check_user_credentials(mysql.connection.cursor(),username, password)
 
     if is_valid:
         return jsonify({"user_type": user_type, "valid": True}), 200
@@ -119,10 +93,10 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    user_type, is_valid = check_user_credentials(username, password)
+    user_type, is_valid = check_user_credentials(mysql.connection.cursor(),username, password)
 
     if is_valid:
-        return jsonify({"message": "Success", "user_type": user_type}), 200
+        return jsonify({"message": "Success", "user_data": user_type}), 200
     else:
         return jsonify({"message": "Failure"}), 401
 
