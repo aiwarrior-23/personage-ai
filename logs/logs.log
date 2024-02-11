@@ -1,0 +1,4 @@
+2024-02-09 18:25:29,626 - my_logger - ERROR - 'int' object is not iterable
+2024-02-09 18:27:58,440 - my_logger - ERROR - string indices must be integers, not 'str'
+2024-02-09 18:28:45,779 - my_logger - ERROR - string indices must be integers, not 'str'
+2024-02-11 15:17:12,207 - my_logger - ERROR - (1265, "Data truncated for column 'user_type' at row 1")

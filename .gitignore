@@ -1,0 +1,5 @@
+node_modules
+frontend
+.DS_Store
+__pycache__
+requirements.txt
