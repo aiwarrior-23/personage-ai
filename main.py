@@ -6,7 +6,7 @@ from flask_mail import Mail, Message
 import uuid
 import requests
 from functions.password_generator import password_generator # Import the password_generator function
-from controllers.users import get_all_users # Import the get_all_users function
+from controllers.users import get_all_users, get_user_type_list # Import the get_all_users function
 from functions.check_credential import check_user_credentials, validate_password # Import the check_user_credentials function
 from logger import get_logger
 
@@ -222,7 +222,11 @@ def get_users():
 @app.route('/get_all_users', methods=['GET'])
 def get_all_users_route():
     return get_all_users(mysql.connect.cursor(), jsonify)
-
+@app.route('/get_user_type_list', methods=['POST'])
+def get_user_type_list_route():
+    data = request.json
+    user_type = data.get('user_type')
+    return get_user_type_list(mysql.connect.cursor(), jsonify,user_type)
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5001)
