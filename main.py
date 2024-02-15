@@ -229,4 +229,4 @@ def get_user_type_list_route():
     return get_user_type_list(mysql.connect.cursor(), jsonify,user_type)
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=True, host="0.0.0.0", port=5000)
