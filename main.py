@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
+import os
 from flask_cors import CORS
 from flask_mysqldb import MySQL
 from flask_mail import Mail, Message
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 import requests
+import zipfile
 
 app = Flask(__name__)
 CORS(app)
@@ -22,7 +24,11 @@ app.config['MAIL_USERNAME'] = 'your_email'
 app.config['MAIL_PASSWORD'] = 'your_password'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 mysql = MySQL(app)
 mail = Mail(app)
 
@@ -236,6 +242,62 @@ def get_users():
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
+
+def fetch_files_from_upload_folder():
+    try:
+        files_data = []
+        UPLOAD_FOLDER = 'uploads'
+
+        for filename in os.listdir(UPLOAD_FOLDER):
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+            if os.path.isfile(file_path):
+                resume_text = ""
+                with fitz.open(file_path) as pdf_document:
+                    num_pages = pdf_document.page_count
+                    for page_num in range(num_pages):
+                        page = pdf_document[page_num]
+                        resume_text += page.get_text()
+                        resume_text = re.sub(r'\n+', ' ', resume_text)
+                files_data.append({
+                    'id': len(files_data) + 1,
+                    'file_name': filename,
+                    'text': resume_text
+                })
+        json_data = json.dumps(files_data)
+
+        return json_data
+
+    except Exception as e:
+        return {'error': str(e)}
+# Example usage
+json_data = fetch_files_from_upload_folder()
+print(json_data)
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+
+        f = request.files['file']
+
+        if f.filename == '':
+            return jsonify({'error': 'No selected file'})
+
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], f.filename)
+        f.save(filename)
+
+        if f.filename.endswith('.zip'):
+            # Extract zip file
+            with zipfile.ZipFile(filename, 'r') as zip_ref:
+                zip_ref.extractall(app.config['UPLOAD_FOLDER'])
+
+            os.remove(filename)
+
+        return jsonify({'message': 'File uploaded successfully', 'filename': f.filename})
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
