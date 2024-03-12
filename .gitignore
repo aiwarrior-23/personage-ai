@@ -3,3 +3,4 @@ frontend
 .DS_Store
 __pycache__
 requirements.txt
+uploads

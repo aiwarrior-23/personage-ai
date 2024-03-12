@@ -9,10 +9,14 @@ from functions.password_generator import password_generator # Import the passwor
 from controllers.users import get_all_users, get_user_type_list # Import the get_all_users function
 from functions.check_credential import check_user_credentials, validate_password # Import the check_user_credentials function
 from logger import get_logger
+import os
+import json
+import zipfile
 
 app = Flask(__name__)
 CORS(app)
-
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # MySQL configurations
 app.config['MYSQL_HOST'] = '98.70.90.20'
 app.config['MYSQL_USER'] = 'root'
@@ -228,5 +232,56 @@ def get_user_type_list_route():
     user_type = data.get('user_type')
     return get_user_type_list(mysql.connect.cursor(), jsonify,user_type)
 
+@app.route('/upload', methods=['POST'])
+def upload_file():
+
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
+    try:
+        requisition_id = request.form.get('jobId')
+        job_title = request.form.get('jobTitle')
+        job_description = request.form.get('jd')
+        count = request.form.get('count')
+        owner = request.form.get('owner')
+        manager = request.form.get('manager')
+        department = request.form.get('department')
+        
+
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+
+        f = request.files['file']
+
+        if f.filename == '':
+            return jsonify({'error': 'No selected file'})
+
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], f.filename)
+        f.save(filename)
+
+        if f.filename.endswith('.zip'):
+            # Extract zip file
+            with zipfile.ZipFile(filename, 'r') as zip_ref:
+                zip_ref.extractall(app.config['UPLOAD_FOLDER'])
+
+            os.remove(filename)
+        # Construct JSON response
+        response_data = {
+            'jd': job_description,
+            'jobTitle': job_title,
+            'jobID': requisition_id,
+            'file_location':  os.path.abspath(UPLOAD_FOLDER),
+            'count' : count,
+            'owner' : owner,
+            'manager' : manager,
+            'department' : department
+        }
+       #Save this Response Data Dictionary
+        with open('response_data.json', 'w') as file:
+            json.dump(response_data, file)
+            return jsonify(response_data)
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5005)
