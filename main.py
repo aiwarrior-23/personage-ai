@@ -316,7 +316,12 @@ async def upload_file():
         with open("overall_jobs.json", 'r') as file:
             overall_jobs = json.load(file)
         
-        overall_jobs[requisition_id]="loading"
+        overall_jobs[requisition_id]= {
+            'jobTitle':job_title,
+            'count':10,
+            'status':'pending'
+            
+        }
         with open(f'overall_jobs.json', 'w') as file:
             json.dump(overall_jobs, file)
         
@@ -354,7 +359,7 @@ async def upload_file():
             'department' : department,
             'uploadSuccess': 'true'
         }
-        overall_jobs[requisition_id]="uploaded"
+        overall_jobs[requisition_id]['status']="uploaded"
         with open(f'overall_jobs.json', 'w') as file:
             json.dump(overall_jobs, file)
        #Save this Response Data Dictionary
@@ -378,10 +383,10 @@ def get_upload_status():
             data = json.load(file)  # Parse the JSON content into a Python dictionary
             
             # Check if 'uploadStatus' key exists in the dictionary
-            if data[filename_prefix] == "loading":
+            if data[filename_prefix]['status'] == "loading":
                 return jsonify({"status": "uploading"}), 200
-            elif data[filename_prefix] == "uploaded":
-                return jsonify({"status": "uploaded"}), 200
+            elif data[filename_prefix]['status'] == "uploaded":
+                return jsonify(data), 200
             else:
                 return jsonify({"error": "uploadSuccess key not found in the file"}), 404
     except Exception as e:
