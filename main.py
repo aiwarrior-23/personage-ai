@@ -372,23 +372,12 @@ async def upload_file():
     
 @app.route('/get-upload-status', methods=['GET'])
 def get_upload_status():
-    # Retrieve the parameter from the query string
-    filename_prefix = request.args.get('jobID')
-    if not filename_prefix:
-        return jsonify({"error": "Missing filename parameter"}), 400
-    
     try:
         # Open and read the JSON file, then parse it to get the uploadStatus
         with open("overall_jobs.json", 'r') as file:
             data = json.load(file)  # Parse the JSON content into a Python dictionary
-            
-            # Check if 'uploadStatus' key exists in the dictionary
-            if data[filename_prefix]['status'] == "loading":
-                return jsonify({"status": "uploading"}), 200
-            elif data[filename_prefix]['status'] == "uploaded":
-                return jsonify(data), 200
-            else:
-                return jsonify({"error": "uploadSuccess key not found in the file"}), 404
+            return jsonify(data), 200
+    
     except Exception as e:
         return jsonify({"error": f"Error reading or parsing file: {str(e)}"}), 500
 
@@ -489,4 +478,4 @@ async def screen_resume(requisition_id):
     
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=False,use_reloader=False,host="0.0.0.0")
