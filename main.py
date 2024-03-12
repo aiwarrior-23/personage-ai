@@ -302,7 +302,7 @@ def upload_file():
         department = request.form.get('department')
         
         if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(f"{UPLOAD_FOLDER}\\{requisition_id}\\new")
+            os.makedirs(f"{UPLOAD_FOLDER}/{requisition_id}/new")
         
 
         if 'file' not in request.files:
