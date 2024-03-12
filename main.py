@@ -163,10 +163,10 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    user_type, is_valid = check_user_credentials(username, password)
+    user_type, is_valid = check_user_credentials(mysql.connection.cursor(),username, password)
 
     if is_valid:
-        return jsonify({"message": "Success", "user_type": user_type}), 200
+        return jsonify({"message": "Success", "user_data": user_type}), 200
     else:
         return jsonify({"message": "Failure"}), 401
 
