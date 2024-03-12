@@ -292,9 +292,6 @@ def get_users():
 @app.route('/upload', methods=['POST'])
 def upload_file():
 
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-
     try:
         requisition_id = request.form.get('jobID')
         job_title = request.form.get('jobTitle')
@@ -303,6 +300,9 @@ def upload_file():
         owner = request.form.get('owner')
         manager = request.form.get('manager')
         department = request.form.get('department')
+        
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(f"{UPLOAD_FOLDER}\\{requisition_id}\\new")
         
 
         if 'file' not in request.files:
@@ -313,13 +313,13 @@ def upload_file():
         if f.filename == '':
             return jsonify({'error': 'No selected file'})
 
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], f.filename)
+        filename = os.path.join(f"{UPLOAD_FOLDER}/{requisition_id}/new", f.filename)
         f.save(filename)
 
         if f.filename.endswith('.zip'):
             # Extract zip file
             with zipfile.ZipFile(filename, 'r') as zip_ref:
-                zip_ref.extractall(app.config['UPLOAD_FOLDER'])
+                zip_ref.extractall(f"{UPLOAD_FOLDER}/{requisition_id}/new")
 
             os.remove(filename)
         # Construct JSON response
@@ -327,7 +327,7 @@ def upload_file():
             'jd': job_description,
             'jobTitle': job_title,
             'jobID': requisition_id,
-            'file_location':  os.path.abspath(UPLOAD_FOLDER),
+            'file_location':  f"{UPLOAD_FOLDER}/{requisition_id}/new",
             'count' : count,
             'owner' : owner,
             'manager' : manager,
@@ -341,7 +341,7 @@ def upload_file():
     except Exception as e:
         return jsonify({'error': str(e)})
 
-
+import glob
 @app.route('/fetch-files', methods=['GET'])
 def fetch_files():
     with open('response_data.json', 'r') as file:
@@ -355,6 +355,14 @@ def fetch_files():
     response_data["count"] = response_data['count']
     response_data["jd"] = response_data['jd']
     resume_json = fetch_files_from_upload_folder(file_location)
+    pattern = os.path.join(file_location, '*.pdf')
+    pdf_files = glob.glob(pattern)
+    for file_path in pdf_files:
+        try:
+            os.remove(file_path)
+            print(f"Deleted: {file_path}")
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
     response_data["resumes"] = json.loads(resume_json)
     #Save this Response Data Dictionary
     with open('response_data.json', 'w') as file:
