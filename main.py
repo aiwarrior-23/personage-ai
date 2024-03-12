@@ -120,10 +120,8 @@ def validate_password(username, password):
 
     return response, status_code
 
-from logger import get_logger
 
 def check_user_credentials(cursor, username, password):
-    logger = get_logger("my_logger")
     try:
         cur = cursor
         cur.execute("SELECT company_passwords.password, company_passwords.username, company_table.* FROM company_passwords LEFT JOIN company_table ON company_table.username = company_passwords.username WHERE company_passwords.username = %s AND company_passwords.password = %s", (username, password))
@@ -139,7 +137,6 @@ def check_user_credentials(cursor, username, password):
     except Exception as e:
         # Handle the exception, you might want to log it or return a specific error
         print(f"Error: {e}")
-        logger.error(str(e))
         return None, False
 
 def validate_password(cursor,username, password):
