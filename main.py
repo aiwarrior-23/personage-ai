@@ -328,6 +328,7 @@ def upload_file():
             'jobTitle': job_title,
             'jobID': requisition_id,
             'file_location':  f"{UPLOAD_FOLDER}/{requisition_id}/new",
+            'backup_location': f"{UPLOAD_FOLDER}/{requisition_id}/backup",
             'count' : count,
             'owner' : owner,
             'manager' : manager,
@@ -342,11 +343,13 @@ def upload_file():
         return jsonify({'error': str(e)})
 
 import glob
+import shutil
 @app.route('/fetch-files', methods=['GET'])
 def fetch_files():
     with open('response_data.json', 'r') as file:
         response_data = json.load(file)
     file_location = response_data['file_location']
+    backup_location = response_data['backup_location']
     response_data["jobTitle"] = response_data['jobTitle']
     response_data["department"] = response_data['department']
     response_data["jobID"] = response_data['jobID']
@@ -357,8 +360,14 @@ def fetch_files():
     resume_json = fetch_files_from_upload_folder(file_location)
     pattern = os.path.join(file_location, '*.pdf')
     pdf_files = glob.glob(pattern)
+    if not os.path.exists(backup_location):
+        os.makedirs(backup_location)
+        print(f"Created target directory: {backup_location}")
+        
     for file_path in pdf_files:
         try:
+            target_path = os.path.join(backup_location, os.path.basename(file_path))
+            shutil.move(file_path, target_path)
             os.remove(file_path)
             print(f"Deleted: {file_path}")
         except Exception as e:
