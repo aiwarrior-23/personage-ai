@@ -290,7 +290,7 @@ def get_users():
         cursor.close()
         
 @app.route('/upload', methods=['POST'])
-async def upload_file():
+def upload_file():
     response_data = {
             'jd': "",
             'jobTitle': "",
