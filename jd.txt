@@ -1,0 +1,25 @@
+Roles & Responsibilities:
+
+Work on implementation of real-time and batch data pipelines for disparate data sources.
+
+Build the infrastructure required for optimal extraction, transformation, and loading of data from a wide variety of data sources using SQL and AWS technologies.
+Build and maintain an analytics layer that utilizes the underlying data to generate dashboards and provide actionable insights.
+Identify improvement areas in the current data system and implement optimizations.
+Work on specific areas of data governance including metadata management and data quality management.
+Participate in discussions with Product Management and Business stakeholders to understand functional requirements and interact with other cross-functional teams as needed to develop, test, and release features.
+Develop Proof-of-Concepts to validate new technology solutions or advancements.
+Work in an Agile Scrum team and help with planning, scoping and creation of technical solutions for the new product capabilities, through to continuous delivery to production.
+Work on building intelligent systems using various AI/ML algorithms. 
+ 
+
+Desired Experience/Skill:
+
+ 
+
+Must have worked on Analytics Applications involving Data Lakes, Data Warehouses and Reporting Implementations.
+Experience with private and public cloud architectures with pros/cons.
+Ability to write robust code in Python and SQL for data processing. Experience in libraries such as Pandas is a must; knowledge of one of the frameworks such as Django or Flask is a plus.
+Experience in implementing data processing pipelines using AWS services: Kinesis, Lambda, Redshift/Snowflake, RDS.
+Knowledge of Kafka, Redis is preferred
+Experience on design and implementation of real-time and batch pipelines. Knowledge of Airflow is preferred.
+Familiarity with machine learning frameworks (like Keras or PyTorch) and libraries (like scikit-learn)
