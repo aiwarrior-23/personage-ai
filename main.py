@@ -290,7 +290,19 @@ def get_users():
         cursor.close()
         
 @app.route('/upload', methods=['POST'])
-def upload_file():
+async def upload_file():
+    response_data = {
+            'jd': "",
+            'jobTitle': "",
+            'jobID': "",
+            'file_location':  f"",
+            'backup_location': f"",
+            'count' : "",
+            'owner' : "",
+            'manager' : "",
+            'department' : "",
+            'uploadSuccess': 'false'
+        }
 
     try:
         requisition_id = request.form.get('jobID')
@@ -300,6 +312,13 @@ def upload_file():
         owner = request.form.get('owner')
         manager = request.form.get('manager')
         department = request.form.get('department')
+        
+        with open("overall_jobs.json", 'r') as file:
+            overall_jobs = json.load(file)
+        
+        overall_jobs[requisition_id]="loading"
+        with open(f'overall_jobs.json', 'w') as file:
+            json.dump(overall_jobs, file)
         
         if not os.path.exists(f"{UPLOAD_FOLDER}/{requisition_id}/new"):
             os.makedirs(f"{UPLOAD_FOLDER}/{requisition_id}/new")
@@ -332,21 +351,46 @@ def upload_file():
             'count' : count,
             'owner' : owner,
             'manager' : manager,
-            'department' : department
+            'department' : department,
+            'uploadSuccess': 'true'
         }
+        overall_jobs[requisition_id]="uploaded"
+        with open(f'overall_jobs.json', 'w') as file:
+            json.dump(overall_jobs, file)
        #Save this Response Data Dictionary
-        with open('response_data.json', 'w') as file:
+        with open(f'{requisition_id}.json', 'w') as file:
             json.dump(response_data, file)
-            return jsonify(response_data)
-
+        # response = await fetch_files(response_data, requisition_id)
+        return jsonify("Success")
     except Exception as e:
         return jsonify({'error': str(e)})
+    
+@app.route('/get-upload-status', methods=['GET'])
+def get_upload_status():
+    # Retrieve the parameter from the query string
+    filename_prefix = request.args.get('jobID')
+    if not filename_prefix:
+        return jsonify({"error": "Missing filename parameter"}), 400
+    
+    try:
+        # Open and read the JSON file, then parse it to get the uploadStatus
+        with open("overall_jobs.json", 'r') as file:
+            data = json.load(file)  # Parse the JSON content into a Python dictionary
+            
+            # Check if 'uploadStatus' key exists in the dictionary
+            if data[filename_prefix] == "loading":
+                return jsonify({"status": "uploading"}), 200
+            elif data[filename_prefix] == "uploaded":
+                return jsonify({"status": "uploaded"}), 200
+            else:
+                return jsonify({"error": "uploadSuccess key not found in the file"}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error reading or parsing file: {str(e)}"}), 500
 
 import glob
 import shutil
-@app.route('/fetch-files', methods=['GET'])
-def fetch_files():
-    with open('response_data.json', 'r') as file:
+async def fetch_files(response_data, requisition_id):
+    with open(f'{requisition_id}.json', 'r') as file:
         response_data = json.load(file)
     file_location = response_data['file_location']
     backup_location = response_data['backup_location']
@@ -374,13 +418,15 @@ def fetch_files():
             print(f"Error deleting file {file_path}: {e}")
     response_data["resumes"] = json.loads(resume_json)
     #Save this Response Data Dictionary
-    with open('response_data.json', 'w') as file:
+    with open(f'{requisition_id}.json', 'w') as file:
         json.dump(response_data, file)
+    screening_status = await screen_resume(requisition_id)
+    return "Success"
 
-    return jsonify(response_data,"Sucees, all files parsed")
 
-@app.route('/screen-resume', methods=['GET'])
-def screen_resume():
+async def screen_resume(requisition_id):
+    with open(f'{requisition_id}.json', 'r') as file:
+        data_dict = json.load(file)
     prompt = ChatPromptTemplate.from_template("""
     Given below is the Job Description of a particular job requirement
     Job Description - {jd}
