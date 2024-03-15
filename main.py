@@ -370,6 +370,29 @@ def upload_file():
     except Exception as e:
         return jsonify({'error': str(e)})
     
+@app.route('/get_user_type_list', methods=['POST'])
+def get_user_type_list_route():
+    data = request.json
+    user_type = data.get('user_type')
+    return get_user_type_list(mysql.connect.cursor(), jsonify,user_type)
+
+def get_user_type_list(cursor, jsonify,user_type):
+    """
+    Get all users from the database.
+
+    Returns:
+    list: List of users.
+    """
+    try:
+        cursor.execute("SELECT * FROM company_table WHERE user_type !='recruiter' or user_type!='interviewer'" )
+        columns = [col[0] for col in cursor.description]
+        users = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return jsonify({'message': "users fetched successfully","status":"success","data":users}), 200
+    except Exception as e:
+        return jsonify({'message': "could not fetch users","status":"failure"}), 500
+    finally:
+        cursor.close()
+    
 @app.route('/get-upload-status', methods=['GET'])
 def get_upload_status():
     try:
