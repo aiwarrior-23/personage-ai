@@ -69,13 +69,37 @@ mail = Mail(app)
 def create_user():
     data = request.json
     cur = mysql.connection.cursor()
+    try:
+        # Generate a random password
+        password = password_generator()
+        cur.execute("INSERT INTO company_table(username, first_name, last_name, email, company, user_type, location, department, reporting_manager) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                    (data.get('username'), data.get('first_name'), data.get('last_name'), data.get('email'), data.get('company'), data.get('user_type'), data.get('location'), data.get('department'), data.get('reporting_manager')))
+        cur.execute("INSERT INTO company_passwords(username, password) VALUES (%s, %s)", (data.get('username'), password))
+        mysql.connection.commit()
+        return jsonify({"message": f"User {data.get('username')} created successfully","status":"success"}), 201
+    except Exception as e:
+        mysql.connection.rollback()
+        logger.error(str(e))
+        return jsonify({"message": str(e), "status":"failure"}), 400
+    finally:
+        cur.close()
+        
+import random
+import string
 
-    cur.execute("INSERT INTO company_table(username, first_name, last_name, email, company, user_type, location, department, reporting_manager) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-                (data.get('username'), data.get('first_name'), data.get('last_name'), data.get('email'), data.get('company'), data.get('user_type'), data.get('location'), data.get('department'), data.get('reporting_manager')))
+def password_generator(length=8):
+    """
+    Generate a random password.
 
-    mysql.connection.commit()
-    cur.close()
-    return jsonify({"message": f"User {data.get('username')} created successfully"}), 201
+    Args:
+    length (int): Length of the password.
+
+    Returns:
+    str: Random password.
+    """
+    characters = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(random.choice(characters) for i in range(length))
+    return password
 
 @app.route('/check_and_update_users', methods=['GET'])
 def check_and_update_users():
