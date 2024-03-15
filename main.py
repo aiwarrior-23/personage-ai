@@ -79,7 +79,6 @@ def create_user():
         return jsonify({"message": f"User {data.get('username')} created successfully","status":"success"}), 201
     except Exception as e:
         mysql.connection.rollback()
-        logger.error(str(e))
         return jsonify({"message": str(e), "status":"failure"}), 400
     finally:
         cur.close()
