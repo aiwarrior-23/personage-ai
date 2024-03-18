@@ -605,6 +605,8 @@ def screen_resume(requisition_id):
                 except json.JSONDecodeError:
                     print("Error decoding JSON")
     overall_jobs[requisition_id]['status']="complete"
+    with open(f'overall_jobs.json', 'w') as file:
+            json.dump(overall_jobs, file)
     socketio.emit('current_status', {'data': overall_jobs})
     return("success")
     
