@@ -406,6 +406,41 @@ def upload_file():
         return jsonify(res)
     except Exception as e:
         return jsonify({'error': str(e)})
+
+@app.route('/get_job_details', methods=['POST'])
+def get_job_details():
+    data = request.json
+    requisition_id = data.get('requisition_id')
+    if not requisition_id:
+        return jsonify({'error': 'requisition_id is required'}), 400
+
+    # Construct the file name from the requisition_id
+    file_name = f"{requisition_id}.json"
+    if not os.path.exists(file_name):
+        return jsonify({'error': 'File not found'}), 404
+
+    try:
+        # Open the JSON file and load its content
+        with open(file_name, 'r') as file:
+            content = json.load(file)
+        
+        # Initialize a dict to store resumes with 'ai_response'
+        resumes_with_ai_response = {}
+
+        # Check if 'resumes' key exists in the content
+        if 'resumes' in content:
+            for resume_id, resume_info in content['resumes'].items():
+                # Check for 'ai_response' key in each resume
+                if 'ai_response' in resume_info:
+                    # If found, add it to the resumes_with_ai_response dict
+                    resumes_with_ai_response[resume_id] = resume_info
+
+        # Return the filtered resumes
+        return jsonify(resumes_with_ai_response)
+    
+    except Exception as e:
+        # In case of any error, return an error message
+        return jsonify({'error': 'An error occurred while processing the request', 'details': str(e)}), 500
     
 @app.route('/get_user_type_list', methods=['POST'])
 def get_user_type_list_route():
@@ -484,7 +519,6 @@ def fetch_files(response_data, requisition_id):
     res = screen_resume(requisition_id)
     return res
     
-
 def get_all_users(cursor, jsonify):
     """
     Get all users from the database.
@@ -547,7 +581,7 @@ def screen_resume(requisition_id):
     jd_text = "Roles & Responsibilities: Work on implementation of real-time and batch data pipelines for disparate data sources. Build the infrastructure required for optimal extraction, transformation, and loading of data from a wide variety of data sources using SQL and AWS technologies. Build and maintain an analytics layer that utilizes the underlying data to generate dashboards and provide actionable insights. Identify improvement areas in the current data system and implement optimizations. Work on specific areas of data governance including metadata management and data quality management. Participate in discussions with Product Management and Business stakeholders to understand functional requirements and interact with other cross-functional teams as needed to develop, test, and release features. Develop Proof-of-Concepts to validate new technology solutions or advancements. Work in an Agile Scrum team and help with planning, scoping and creation of technical solutions for the new product capabilities, through to continuous delivery to production. Work on building intelligent systems using various AI/ML algorithms. Desired Experience/Skill: Must have worked on Analytics Applications involving Data Lakes, Data Warehouses and Reporting Implementations. Experience with private and public cloud architectures with pros/cons. Ability to write robust code in Python and SQL for data processing. Experience in libraries such as Pandas is a must; knowledge of one of the frameworks such as Django or Flask is a plus. Experience in implementing data processing pipelines using AWS services: Kinesis, Lambda, Redshift/Snowflake, RDS. Knowledge of Kafka, Redis is preferred Experience on design and implementation of real-time and batch pipelines. Knowledge of Airflow is preferred. Familiarity with machine learning frameworks (like Keras or PyTorch) and libraries (like scikit-learn)"
     for key in data_dict.keys():
         if key == 'resumes':
-            for res in data_dict[key].keys():
+            for i, res in enumerate(data_dict[key].keys()):
                 print(data_dict[key].keys())
                 print(res, type(res))
                 resume_text = data_dict[key][res]["text"]
@@ -567,6 +601,7 @@ def screen_resume(requisition_id):
                     #Save this Response Data Dictionary
                     with open('response_data.json', 'w') as file:
                         file.write(json.dumps(data_dict))
+                    socketio.emit('resume_status', {'data': f"Resume {i} complete"})
                 except json.JSONDecodeError:
                     print("Error decoding JSON")
     overall_jobs[requisition_id]['status']="complete"
