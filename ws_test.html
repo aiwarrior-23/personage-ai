@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Connect to your Flask-SocketIO server
+            var socket = io('http://localhost:5000');
+
+            socket.on('connect', function () {
+                console.log('Connected to the server.');
+
+                // Send a message (if needed)
+                // socket.emit('my event', {data: 'I\'m connected!'});
+
+                // Listen for the 'screening_complete' event
+
+                socket.on('parsing_files', function (data) {
+                    console.log('parsing_files:', data);
+                });
+
+
+                socket.on('hahahaha', function (data) {
+                    console.log('screening_complete:', data);
+                });
+
+                socket.on('current_status', function (data) {
+                    console.log('Upload complete:', data);
+                });
+            });
+
+            socket.on('disconnect', function () {
+                console.log('Disconnected from the server.');
+            });
+
+
+        });
+    </script>
+</head>
+
+<body>
+    <h2>Socket.IO Test Client</h2>
+    <p>Check the browser console for messages.</p>
+</body>
+
+</html>

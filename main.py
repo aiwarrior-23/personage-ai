@@ -13,8 +13,21 @@ import os
 from langchain.embeddings import AzureOpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
+from flask_socketio import SocketIO, emit
+import asyncio
+import aiofiles
+from concurrent.futures import ThreadPoolExecutor
+
+executor = ThreadPoolExecutor(max_workers=4)
+
+async def async_move_file(source, destination):
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(executor, shutil.move, source, destination)
+
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = '12345'
+socketio = SocketIO(app , cors_allowed_origins='*')
 CORS(app)
 
 file_path = 'response_data.json'
@@ -312,6 +325,7 @@ def get_users():
     finally:
         cursor.close()
         
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     response_data = {
@@ -388,8 +402,8 @@ def upload_file():
        #Save this Response Data Dictionary
         with open(f'{requisition_id}.json', 'w') as file:
             json.dump(response_data, file)
-        # response = await fetch_files(response_data, requisition_id)
-        return jsonify("Success")
+        res = fetch_files(response_data, requisition_id)
+        return jsonify(res)
     except Exception as e:
         return jsonify({'error': str(e)})
     
@@ -429,9 +443,12 @@ def get_upload_status():
 
 import glob
 import shutil
-async def fetch_files(response_data, requisition_id):
+def fetch_files(response_data, requisition_id):
     with open(f'{requisition_id}.json', 'r') as file:
         response_data = json.load(file)
+    with open("overall_jobs.json", 'r') as file:
+            overall_jobs = json.load(file)
+    socketio.emit('current_status', {'data': overall_jobs})
     file_location = response_data['file_location']
     backup_location = response_data['backup_location']
     response_data["jobTitle"] = response_data['jobTitle']
@@ -457,16 +474,25 @@ async def fetch_files(response_data, requisition_id):
         except Exception as e:
             print(f"Error deleting file {file_path}: {e}")
     response_data["resumes"] = json.loads(resume_json)
+    overall_jobs[requisition_id]['status']="parsed"
+    with open(f'overall_jobs.json', 'w') as file:
+            json.dump(overall_jobs, file)
     #Save this Response Data Dictionary
     with open(f'{requisition_id}.json', 'w') as file:
-        json.dump(response_data, file)
-    screening_status = await screen_resume(requisition_id)
-    return "Success"
+        file.write(json.dumps(response_data))
+        print("successfully written")
+    res = screen_resume(requisition_id)
+    return res
+    
 
 
-async def screen_resume(requisition_id):
+def screen_resume(requisition_id):
     with open(f'{requisition_id}.json', 'r') as file:
         data_dict = json.load(file)
+    with open("overall_jobs.json", 'r') as file:
+            overall_jobs = json.load(file)
+    print("requisition_id", requisition_id)
+    socketio.emit('current_status', {'data': overall_jobs})
     prompt = ChatPromptTemplate.from_template("""
     Given below is the Job Description of a particular job requirement
     Job Description - {jd}
@@ -499,14 +525,17 @@ async def screen_resume(requisition_id):
     chain = prompt | llm_langchain
     jd_text = "Roles & Responsibilities: Work on implementation of real-time and batch data pipelines for disparate data sources. Build the infrastructure required for optimal extraction, transformation, and loading of data from a wide variety of data sources using SQL and AWS technologies. Build and maintain an analytics layer that utilizes the underlying data to generate dashboards and provide actionable insights. Identify improvement areas in the current data system and implement optimizations. Work on specific areas of data governance including metadata management and data quality management. Participate in discussions with Product Management and Business stakeholders to understand functional requirements and interact with other cross-functional teams as needed to develop, test, and release features. Develop Proof-of-Concepts to validate new technology solutions or advancements. Work in an Agile Scrum team and help with planning, scoping and creation of technical solutions for the new product capabilities, through to continuous delivery to production. Work on building intelligent systems using various AI/ML algorithms. Desired Experience/Skill: Must have worked on Analytics Applications involving Data Lakes, Data Warehouses and Reporting Implementations. Experience with private and public cloud architectures with pros/cons. Ability to write robust code in Python and SQL for data processing. Experience in libraries such as Pandas is a must; knowledge of one of the frameworks such as Django or Flask is a plus. Experience in implementing data processing pipelines using AWS services: Kinesis, Lambda, Redshift/Snowflake, RDS. Knowledge of Kafka, Redis is preferred Experience on design and implementation of real-time and batch pipelines. Knowledge of Airflow is preferred. Familiarity with machine learning frameworks (like Keras or PyTorch) and libraries (like scikit-learn)"
     for key in data_dict.keys():
-        print(key)
         if key == 'resumes':
             for res in data_dict[key].keys():
+                print(data_dict[key].keys())
                 print(res, type(res))
                 resume_text = data_dict[key][res]["text"]
                 print("-----------",resume_text)
+                print("-----------",jd_text)
                 output = chain.invoke({"jd": jd_text, "resume":resume_text})
+                print("*****************",output)
                 output_content = output.content
+                # output_content="Sachin"
                 try:
                     # Find the JSON start and end, and parse it
                     json_start = output_content.find("{")
@@ -516,12 +545,13 @@ async def screen_resume(requisition_id):
                     data_dict[key][res]["ai_response"] = json_data 
                     #Save this Response Data Dictionary
                     with open('response_data.json', 'w') as file:
-                        json.dump(data_dict, file)
+                        file.write(json.dumps(data_dict))
                 except json.JSONDecodeError:
                     print("Error decoding JSON")
-            break;
-    return("suceess")
+    overall_jobs[requisition_id]['status']="complete"
+    socketio.emit('current_status', {'data': overall_jobs})
+    return("success")
     
 
 if __name__ == '__main__':
-    app.run(debug=False,use_reloader=False,host="0.0.0.0")
+    socketio.run(app, debug=True,use_reloader=False,host="0.0.0.0")
