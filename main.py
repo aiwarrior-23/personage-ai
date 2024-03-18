@@ -599,7 +599,7 @@ def screen_resume(requisition_id):
                     json_data = json.loads(json_str)
                     data_dict[key][res]["ai_response"] = json_data 
                     #Save this Response Data Dictionary
-                    with open('response_data.json', 'w') as file:
+                    with open(f'{requisition_id}.json', 'w') as file:
                         file.write(json.dumps(data_dict))
                     socketio.emit('resume_status', {'data': f"Resume {i} complete"})
                 except json.JSONDecodeError:
