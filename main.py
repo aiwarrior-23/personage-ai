@@ -585,6 +585,8 @@ def screen_resume(requisition_id):
                 print(data_dict[key].keys())
                 print(res, type(res))
                 resume_text = data_dict[key][res]["text"]
+                print("-----------",resume_text)
+                print("-----------",jd_text)
                 output = chain.invoke({"jd": jd_text, "resume":resume_text})
                 output_content = output.content
                 print(output_content)
