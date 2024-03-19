@@ -574,16 +574,19 @@ def screen_resume(requisition_id):
         "Decision":"Selected or Rejected",
         "Reason":"Reason for the decision. Is the decision final or can a phone call be made to candidate to confirm few skills which are implied in resume but not explicitly mentioned",
         "Frequent Switcher": "Findout if the candidate has switched multiple companies in limited amount of time. Show the company and tenure to support your judgement",
-        "Career Gap": "Can you notice any missing years where person was not working in a company? For example a person working in a company from 2012 to 2014 and then in next company 2016 to present, then there is two years gap. Mention all these gaps"
+        "Career Gap": "Can you notice any missing years where person was not working in a company? For example a person working in a company from 2012 to 2014 and then in next company 2016 to present, then there is two years gap. Mention all these gaps",
+        "name":"Extract the name of the candidate",
+        "phone_number":"Extract phone number if present, else write not available",
+        "email_id":"Extract email id if present, else write not available"
     }}
     """)
     chain = prompt | llm_langchain
     jd_text = "Roles & Responsibilities: Work on implementation of real-time and batch data pipelines for disparate data sources. Build the infrastructure required for optimal extraction, transformation, and loading of data from a wide variety of data sources using SQL and AWS technologies. Build and maintain an analytics layer that utilizes the underlying data to generate dashboards and provide actionable insights. Identify improvement areas in the current data system and implement optimizations. Work on specific areas of data governance including metadata management and data quality management. Participate in discussions with Product Management and Business stakeholders to understand functional requirements and interact with other cross-functional teams as needed to develop, test, and release features. Develop Proof-of-Concepts to validate new technology solutions or advancements. Work in an Agile Scrum team and help with planning, scoping and creation of technical solutions for the new product capabilities, through to continuous delivery to production. Work on building intelligent systems using various AI/ML algorithms. Desired Experience/Skill: Must have worked on Analytics Applications involving Data Lakes, Data Warehouses and Reporting Implementations. Experience with private and public cloud architectures with pros/cons. Ability to write robust code in Python and SQL for data processing. Experience in libraries such as Pandas is a must; knowledge of one of the frameworks such as Django or Flask is a plus. Experience in implementing data processing pipelines using AWS services: Kinesis, Lambda, Redshift/Snowflake, RDS. Knowledge of Kafka, Redis is preferred Experience on design and implementation of real-time and batch pipelines. Knowledge of Airflow is preferred. Familiarity with machine learning frameworks (like Keras or PyTorch) and libraries (like scikit-learn)"
-    resume_count = len(data_dict[key].keys())
     for key in data_dict.keys():
         if key == 'resumes':
             c = 0
             for i, res in enumerate(data_dict[key].keys()):
+                resume_count = len(data_dict[key].keys())
                 print(data_dict[key].keys())
                 print(res, type(res))
                 resume_text = data_dict[key][res]["text"]
@@ -604,7 +607,7 @@ def screen_resume(requisition_id):
                     with open(f'{requisition_id}.json', 'w') as file:
                         file.write(json.dumps(data_dict))
                     c += 1
-                    socketio.emit('resume_status', {'completed': c, "pending":resume_count-c})
+                    socketio.emit('resume_status', {'completed': c, "pending":resume_count})
                 except json.JSONDecodeError:
                     print("Error decoding JSON")
     overall_jobs[requisition_id]['status']="complete"
