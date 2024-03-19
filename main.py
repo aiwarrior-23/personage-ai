@@ -64,7 +64,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # MySQL configurations
 app.config['MYSQL_HOST'] = '98.70.90.20'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'admin'
+app.config['MYSQL_PASSWORD'] = '12345'
 app.config['MYSQL_DB'] = 'mgmt'
 
 # Email configurations
