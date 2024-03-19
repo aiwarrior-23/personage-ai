@@ -575,7 +575,7 @@ def screen_resume(requisition_id):
         "Reason":"Reason for the decision. Is the decision final or can a phone call be made to candidate to confirm few skills which are implied in resume but not explicitly mentioned",
         "Frequent Switcher": "Findout if the candidate has switched multiple companies in limited amount of time. Show the company and tenure to support your judgement",
         "Career Gap": "Can you notice any missing years where person was not working in a company? For example a person working in a company from 2012 to 2014 and then in next company 2016 to present, then there is two years gap. Mention all these gaps",
-        "name":"Extract the name of the candidate",
+        "name":"Extract the name of the candidate from jd, else write not available",
         "phone_number":"Extract phone number if present, else write not available",
         "email_id":"Extract email id if present, else write not available"
     }}
