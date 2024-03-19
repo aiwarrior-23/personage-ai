@@ -542,8 +542,6 @@ def get_all_users_route():
 
 
 def screen_resume(requisition_id):
-    with open(f'{requisition_id}.json', 'r') as file:
-        data_dict = json.load(file)
     with open("overall_jobs.json", 'r') as file:
             overall_jobs = json.load(file)
     print("requisition_id", requisition_id)
@@ -582,14 +580,14 @@ def screen_resume(requisition_id):
     for key in data_dict.keys():
         if key == 'resumes':
             for i, res in enumerate(data_dict[key].keys()):
+                with open(f'{requisition_id}.json', 'r') as file:
+                    data_dict = json.load(file)
                 print(data_dict[key].keys())
                 print(res, type(res))
                 resume_text = data_dict[key][res]["text"]
-                print("-----------",resume_text)
-                print("-----------",jd_text)
                 output = chain.invoke({"jd": jd_text, "resume":resume_text})
-                print("*****************",output)
                 output_content = output.content
+                print(output_content)
                 # output_content="Sachin"
                 try:
                     # Find the JSON start and end, and parse it
