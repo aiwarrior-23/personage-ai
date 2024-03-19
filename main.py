@@ -557,7 +557,7 @@ def screen_resume(requisition_id):
     Make sure to extract all the important points mentioned in JD. Don't miss a single point.
     Extract all the skills or tools mentioned in JD and match accordingly
     Below are the mandatory skills where 70% match should be there
-    Mandatory Skills - [python]
+    Mandatory Skills - [extract all mandatory skills from Job description in a list format]
     For all the others 50% minimum match should be there. Give response in below JSON format -
     {{
         "Mandatory Skills": {{
